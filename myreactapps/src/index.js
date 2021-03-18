@@ -1,15 +1,20 @@
+import { render } from 'react-dom';
 import React from 'react';
-import ReactDOM from 'react-dom' //render engine: browser
-import { HeaderComponent } from './header/header';
-import { FooterComponent } from './footer/footer';
-import { BodyComponent } from './body/body'
+// import './App.css'
+// import './index.css';
+import 'bootstrap/dist/css/bootstrap.css'
 
-const App = () => <div>
-    <HeaderComponent />
-    <BodyComponent />
-    <FooterComponent />
-</div>
+const Courses = props => {
+    console.log(props.courses)
+    return <div className="container">
+        <h1>Courses</h1>
+        <ul className="list-group list-group-flush">
+            {courses.map((course, index) =>
+                <li className="list-group-item" key={index}>{course}</li>)}
+        </ul>
+    </div>
+};
 
+const courses = ['javascript', 'react', 'node', 'angular', 'reactnative'];
 
-//render Heading into browser
-ReactDOM.render(<App />, document.getElementById('root'))
+render(<Courses courses={courses} />, document.getElementById('root'));
