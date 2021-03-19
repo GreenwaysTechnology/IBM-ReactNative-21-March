@@ -1,20 +1,62 @@
-import { render } from 'react-dom';
+import { createStore } from 'redux';
 import React from 'react';
-// import './App.css'
-// import './index.css';
-import 'bootstrap/dist/css/bootstrap.css'
+import { render } from 'react-dom';
+import { connect, Provider } from 'react-redux';
 
-const Courses = props => {
-    console.log(props.courses)
-    return <div className="container">
-        <h1>Courses</h1>
-        <ul className="list-group list-group-flush">
-            {courses.map((course, index) =>
-                <li className="list-group-item" key={index}>{course}</li>)}
-        </ul>
-    </div>
+
+//Sending request to store
+//action ; literal object ;
+const IncrementAction = {
+    type: 'INCREMENT'
 };
 
-const courses = ['javascript', 'react', 'node', 'angular', 'reactnative'];
+//reducer
+const CounterReducer = (counter = 10, action) => {
+    //logic
+    switch (action.type) {
+        case 'INCREMENT':
+            //return new state
+            return counter + 1;
+        default:
+            //must return default state
+            return counter;
+    }
+}
 
-render(<Courses courses={courses} />, document.getElementById('root'));
+//create store
+const store = createStore(CounterReducer);
+/////////////////////////////////////////////////////////////////////////////////
+//mapper function ; convert redux state into react props
+
+function mapStateToProp(counter) {
+    //mapper object
+    return {
+        //left: right - prop:state
+        counter: counter
+    }
+}
+//Step 3: Declare React component
+function IncrementComponent(props) {
+    //event listener
+    function onIncrement(e) {
+        //TODO
+        props.dispatch(IncrementAction)
+    }
+    return <div>
+        <h1>React - Redux - Counter App</h1>
+        <h2>Increment : {props.counter}</h2>
+        <button onClick={onIncrement}>+</button>
+    </div>
+}
+//Higher order Component - feature merged
+const IncrementContainer = connect(mapStateToProp)(IncrementComponent);
+
+
+const App = () => <div>
+    <Provider store={store}>
+        <IncrementContainer />
+    </Provider>
+</div>
+render(<App />, document.getElementById('root'));
+
+
