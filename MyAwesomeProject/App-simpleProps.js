@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Greeting } from './components/greeting';
+import { Text, View, StyleSheet } from 'react-native';
 
 export const { container, text } = StyleSheet.create({
     container: {
@@ -8,7 +7,16 @@ export const { container, text } = StyleSheet.create({
         padding: 24,
         backgroundColor: "#eaeaea"
     },
+    text: {
+        color: "blue",
+        textAlign: "center",
+        fontSize: 30
+    }
 });
+
+const Greeting = props => <>
+    <Text style={text}>{props.message}</Text>
+</>
 
 const App = () => {
     return <View style={container}>
@@ -16,8 +24,6 @@ const App = () => {
         <Greeting message="Hello Props View" />
         <Greeting message="Hello Props View" />
         <Greeting message="Hello Props View" />
-        <Greeting />
-
     </View>
 }
 export default App;
