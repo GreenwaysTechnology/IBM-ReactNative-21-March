@@ -10,7 +10,7 @@ export const { text } = StyleSheet.create({
 });
 
 export const Greeting = props => <>
-    <Text onPress={()=>alert('pressed')} style={text}>{props.message}</Text>
+    <Text onPress={() => alert('pressed')} style={text}>{props.message}</Text>
 </>
 //default Property
 Greeting.defaultProps = {
