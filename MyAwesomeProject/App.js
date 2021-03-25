@@ -1,80 +1,51 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native'
+import React, { useState } from 'react';
+import {
+    Platform,
+    PlatformColor,
+    StyleSheet,
+    Text,
+    TouchableHighlight,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         flexDirection: 'row', //column,column-reverse,row-reverse
-//         backgroundColor: 'brown',
-//         paddingTop: 50
-//     },
-// });
-
-// const App = () => {
-
-//     {/**container */ }
-//     return <View style={styles.container}>
-//         <View style={{ backgroundColor: 'yellow', width: 50, height: 50 }}>
-//             <Text>Box-1</Text>
-//         </View>
-//         <View style={{ backgroundColor: 'pink', width: 50, height: 50 }}>
-//             <Text>Box-2</Text>
-//         </View>
-//         <View style={{ backgroundColor: 'lightblue', width: 50, height: 50 }}>
-//             <Text>Box-3</Text>
-//         </View>
-//     </View>
-
-// }
-
-// const App = () => {
-
-//     {/**container */ }
-//     return <View style={styles.container}>
-//         <View  style={{ flex:1, backgroundColor: 'yellow', width: 50, height: 50 }}>
-//             <Text>Box-1</Text>
-//         </View>
-//         <View style={{ flex:1, backgroundColor: 'pink', width: 50, height: 50 }}>
-//             <Text>Box-2</Text>
-//         </View>
-//         <View style={{ flex:3, backgroundColor: 'lightblue', width: 50, height: 50 }}>
-//             <Text>Box-3</Text>
-//         </View>
-//     </View>
-
-// }
-const App = () => {
-    return (<View style={styles.container}>
-        <Text style={styles.headerStyle}>flex</Text>
-        <View style={[{ flex: 1 }, styles.elementsContainer]}>
-            <View style={{ flex: 1, backgroundColor: '#EE2C38' }} />
-            <View style={{ flex: 2, backgroundColor: '#FAA030' }} />
-            <View style={{ flex: 4, backgroundColor: '#32B76C' }} />
-        </View>
-    </View>
-    );
-}
-
-
-const styles = {
+export const { container, text, button } = StyleSheet.create({
     container: {
-        marginTop: 48,
         flex: 1,
-        backgroundColor:'pink'
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    headerStyle: {
-        fontSize: 36,
-        textAlign: 'center',
-        fontWeight: '100',
-        marginBottom: 24
+    text: {
+        color: "blue",
+        textAlign: "center",
+        fontSize: 30
     },
-    elementsContainer: {
-        backgroundColor: 'black',
-        marginLeft: 24,
-        marginRight: 24,
-        marginBottom: 24
+    button: {
+        alignItems: "center",
+        backgroundColor: "lightgray",
+        padding: 10
     }
-}
 
+});
+
+const App = () => {
+    const [count, setCount] = useState(0);
+    const onIncrement = () => setCount(count + 1);
+    return <View style={container}>
+        <TouchableHighlight onPress={onIncrement} activeOpacity={0.6}
+            underlayColor="#DDDDDD">
+            <View style={button}>
+                <Text>Touch Me!</Text>
+            </View>
+        </TouchableHighlight>
+        <TouchableOpacity>
+            <View style={button}>
+                <Text>Touch Me!</Text>
+            </View>
+        </TouchableOpacity>
+    </View>
+}
 
 export default App;
+
