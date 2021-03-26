@@ -1313,11 +1313,260 @@ const App = () => {
 export default App;
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-Networking:
- How to connect webservices? How to fill data.
+                                      Networking
+////////////////////////////////////////////////////////////////////////////////////////////
 
-Redux integration
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
 
+class ChildOne extends React.Component {
+  constructor() {
+    super();
+    console.log('Child One is called')
+  }
+  componentDidMount() {
+    console.log('Child one Ui is rendered')
+  }
+  render() {
+    console.log('Child one render is called')
+    return <View>
+      <Text>Child One</Text>
+      <ChildTwo></ChildTwo>
+    </View>
+  }
+}
+class ChildTwo extends React.Component {
+  constructor() {
+    super();
+    console.log('Child Two is called')
+  }
+  componentDidMount() {
+    console.log('Child Two Ui is rendered')
+  }
+  render() {
+    console.log('Child Two render is called')
+    return <View>
+      <Text>Child Two</Text>
+    </View>
+  }
+}
+
+export default class App extends React.Component {
+  //add constructor
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: null, // if any ajax error
+      isLoaded: false, //Progress bar enabler
+      items: []  // data to be filed
+    };
+    console.log('Parent constructor is called')
+  }
+  componentDidMount() {
+    console.log('Parent Ui is rendered')
+    //api code.
+    const url = "https://jsonplaceholder.typicode.com/todos"
+    fetch(url)
+      .then(res => res.json())
+      .then((result) => {
+        this.setState({
+          isLoaded: true,
+          items: result
+        });
+      },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+
+  }
+  static getDerivedStateFromProps(props, state) {
+    //  console.log(`Current State ${JSON.stringify(state)} Current Prop ${JSON.stringify(prop)}`)
+
+  }
+  componentDidUpdate() {
+    console.log('Ui is updated')
+  }
+
+
+  render() {
+    const { error, isLoaded, items } = this.state;
+    console.log('Parent  render is called')
+    if (error) {
+      return <View style={styles.error}> Error: {error.message}</View>;
+    } else if (!isLoaded) {
+      return <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>;
+    } else {
+      return (<View styles={styles.container}>
+        <FlatList
+          keyExtractor={(item) => item.id + ""}
+          data={items}
+          renderItem={({ item }) => {
+            //  console.log(item);
+            return <Text style={styles.item}>{item.title}</Text>
+          }} />
+      </View>);
+    }
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  error: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loader: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  item: {
+    flex: 1,
+    marginHorizontal: 10,
+    marginTop: 25,
+    padding: 30,
+    backgroundColor: 'pink',
+    fontSize: 24
+  }
+});
+
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+
+
+const App = () => {
+    const [isLoading, setLoading] = useState(true);
+    const [data, setData] = useState([]);
+    //compoentDidMount life cycle api
+    useEffect(() => {
+        fetch('https://reactnative.dev/movies.json')
+            .then((response) => response.json())
+            .then((json) => setData(json.movies))
+            .catch((error) => console.error(error))
+            .finally(() => setLoading(false));
+    }, []);
+
+    return (
+        <View style={styles.container}>
+            {isLoading ? <ActivityIndicator size="large" color="#00ff00" />
+                : (
+                    <FlatList
+                        data={data}
+                        keyExtractor={({ id }, index) => id}
+                        renderItem={({ item }) => (
+                            <Text>{item.title}, {item.releaseYear}</Text>
+                        )}
+                    />
+                )}
+        </View>
+    );
+};
+export default App;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginTop: StatusBar.currentHeight || 0,
+        justifyContent: 'center'
+    },
+    item: {
+        backgroundColor: '#f9c2ff',
+        padding: 20,
+        marginVertical: 8,
+        marginHorizontal: 16,
+    },
+    title: {
+        fontSize: 32,
+    },
+});
+
+React Native Redux:
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { createStore } from 'redux';
+import { connect, Provider } from 'react-redux';
+
+export const { container, text } = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 24,
+        backgroundColor: "#eaeaea",
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
+//Sending request to store
+//action ; literal object ;
+const IncrementAction = {
+    type: 'INCREMENT'
+};
+//reducer
+const CounterReducer = (counter = 10, action) => {
+    //logic
+    switch (action.type) {
+        case 'INCREMENT':
+            //return new state
+            return counter + 1;
+        default:
+            //must return default state
+            return counter;
+    }
+}
+//create store
+const store = createStore(CounterReducer);
+/////////////////////////////////////////////////////////////////////////////////
+//mapper function ; convert redux state into react props
+
+function mapStateToProp(counter) {
+    //mapper object
+    return {
+        //left: right - prop:state
+        counter: counter
+    }
+}
+function IncrementComponent(props) {
+    //event listener
+    function onIncrement(e) {
+        //TODO
+        props.dispatch(IncrementAction)
+    }
+    return <View style={container}>
+        <Text>React Native - Redux - Counter App</Text>
+        <Text>Increment : {props.counter}</Text>
+        <Button title="+" onPress={onIncrement} />
+    </View>
+}
+const IncrementContainer = connect(mapStateToProp)(IncrementComponent);
+
+const App = () => {
+
+    return <View style={container}>
+        {/**state as prop */}
+        <Provider store={store}>
+            <IncrementContainer />
+        </Provider>
+    </View>
+}
+
+export default App;
 
 
 
