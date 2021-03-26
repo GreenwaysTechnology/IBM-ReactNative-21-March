@@ -1,51 +1,68 @@
 import React, { useState } from 'react';
-import {
-    Platform,
-    PlatformColor,
-    StyleSheet,
-    Text,
-    TouchableHighlight,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { createStore } from 'redux';
+import { connect, Provider } from 'react-redux';
 
-export const { container, text, button } = StyleSheet.create({
+export const { container, text } = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        padding: 24,
+        backgroundColor: "#eaeaea",
         alignItems: 'center',
         justifyContent: 'center',
     },
-    text: {
-        color: "blue",
-        textAlign: "center",
-        fontSize: 30
-    },
-    button: {
-        alignItems: "center",
-        backgroundColor: "lightgray",
-        padding: 10
-    }
-
 });
+//Sending request to store
+//action ; literal object ;
+const IncrementAction = {
+    type: 'INCREMENT'
+};
+//reducer
+const CounterReducer = (counter = 10, action) => {
+    //logic
+    switch (action.type) {
+        case 'INCREMENT':
+            //return new state
+            return counter + 1;
+        default:
+            //must return default state
+            return counter;
+    }
+}
+//create store
+const store = createStore(CounterReducer);
+/////////////////////////////////////////////////////////////////////////////////
+//mapper function ; convert redux state into react props
+
+function mapStateToProp(counter) {
+    //mapper object
+    return {
+        //left: right - prop:state
+        counter: counter
+    }
+}
+function IncrementComponent(props) {
+    //event listener
+    function onIncrement(e) {
+        //TODO
+        props.dispatch(IncrementAction)
+    }
+    return <View style={container}>
+        <Text>React Native - Redux - Counter App</Text>
+        <Text>Increment : {props.counter}</Text>
+        <Button title="+" onPress={onIncrement} />
+    </View>
+}
+const IncrementContainer = connect(mapStateToProp)(IncrementComponent);
 
 const App = () => {
-    const [count, setCount] = useState(0);
-    const onIncrement = () => setCount(count + 1);
+
     return <View style={container}>
-        <TouchableHighlight onPress={onIncrement} activeOpacity={0.6}
-            underlayColor="#DDDDDD">
-            <View style={button}>
-                <Text>Touch Me!</Text>
-            </View>
-        </TouchableHighlight>
-        <TouchableOpacity>
-            <View style={button}>
-                <Text>Touch Me!</Text>
-            </View>
-        </TouchableOpacity>
+        {/**state as prop */}
+        <Provider store={store}>
+            <IncrementContainer />
+        </Provider>
     </View>
 }
 
 export default App;
-
