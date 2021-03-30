@@ -1,68 +1,53 @@
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { createStore } from 'redux';
-import { connect, Provider } from 'react-redux';
+import * as React from 'react';
+import { Text, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
 
-export const { container, text } = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: "#eaeaea",
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
-//Sending request to store
-//action ; literal object ;
-const IncrementAction = {
-    type: 'INCREMENT'
-};
-//reducer
-const CounterReducer = (counter = 10, action) => {
-    //logic
-    switch (action.type) {
-        case 'INCREMENT':
-            //return new state
-            return counter + 1;
-        default:
-            //must return default state
-            return counter;
-    }
-}
-//create store
-const store = createStore(CounterReducer);
-/////////////////////////////////////////////////////////////////////////////////
-//mapper function ; convert redux state into react props
-
-function mapStateToProp(counter) {
-    //mapper object
-    return {
-        //left: right - prop:state
-        counter: counter
-    }
-}
-function IncrementComponent(props) {
-    //event listener
-    function onIncrement(e) {
-        //TODO
-        props.dispatch(IncrementAction)
-    }
-    return <View style={container}>
-        <Text>React Native - Redux - Counter App</Text>
-        <Text>Increment : {props.counter}</Text>
-        <Button title="+" onPress={onIncrement} />
+function HomeScreen() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Home!</Text>
     </View>
+  );
 }
-const IncrementContainer = connect(mapStateToProp)(IncrementComponent);
 
-const App = () => {
-
-    return <View style={container}>
-        {/**state as prop */}
-        <Provider store={store}>
-            <IncrementContainer />
-        </Provider>
+function SettingsScreen() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Settings!</Text>
     </View>
+  );
 }
 
-export default App;
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            if (route.name === 'Home') {
+              iconName = focused ? 'ios-information-circle' : 'ios-information-circle-outline';
+            } else if (route.name === 'Settings') {
+              iconName = focused ? 'ios-list-box' : 'ios-list';
+            }
+
+            // You can return any component that you like here!
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+        })}
+        tabBarOptions={{
+          activeTintColor: 'tomato',
+          inactiveTintColor: 'gray',
+        }}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
