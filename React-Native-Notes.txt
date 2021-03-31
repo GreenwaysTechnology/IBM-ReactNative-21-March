@@ -1780,7 +1780,7 @@ Each screen in the navigator can specify some options for the navigator, such as
 <Stack.Screen
   name="Home"
   component={HomeScreen}
-  options={{ title: 'Welcome to Start Token' }}s
+  options={{ title: 'Welcome to Start Token' }}
 />
 Passing additional props#
 .........................
@@ -2859,13 +2859,615 @@ export default function App() {
 //////////////////&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&///////////////////////////////////
 
 Tab + Stack Coimbation:
-
-Drawer Navigation
-////////////////////////////////////////////////////////////////////////////////////
+.......................
 
 
+import * as React from 'react';
+import { Button, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 
+function HomeScreen({ navigation }) {
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Home screen</Text>
+            <Button
+                title="Go to Details"
+                onPress={() => navigation.navigate('Details')}
+            />
+        </View>
+    );
+}
+
+function DetailsScreen() {
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Details!</Text>
+        </View>
+    );
+}
+function SettingsScreen({ navigation }) {
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Settings screen</Text>
+            <Button
+                title="Go to Details"
+                onPress={() => navigation.navigate('Details')}
+            />
+        </View>
+    );
+}
+const HomeStack = createStackNavigator();
+
+function HomeStackScreen() {
+    return (
+        <HomeStack.Navigator>
+            <HomeStack.Screen name="Home" component={HomeScreen} />
+            <HomeStack.Screen name="Details" component={DetailsScreen} />
+        </HomeStack.Navigator>
+    );
+}
+
+const SettingsStack = createStackNavigator();
+function SettingsStackScreen() {
+    return (
+        <SettingsStack.Navigator>
+            <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+            <SettingsStack.Screen name="Details" component={DetailsScreen} />
+        </SettingsStack.Navigator>
+    );
+}
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+    return (
+      <NavigationContainer>
+        <Tab.Navigator>
+          <Tab.Screen name="Home" component={HomeStackScreen} />
+          <Tab.Screen name="Settings" component={SettingsStackScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    );
+  }
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Drawer Navigation:
+.................
+npm install @react-navigation/drawer
+
+
+import * as React from 'react';
+import { Button, View,Text } from 'react-native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+
+const Drawer = createDrawerNavigator();
+
+function HomeScreen({ navigation }) {
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text>Home Screen</Text>
+            <Button
+                onPress={() => navigation.navigate('Notifications')}
+                title="Go to notifications"
+            />
+        </View>
+    );
+}
+function NotificationsScreen({ navigation }) {
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text>Notifications Screen</Text>
+            <Button onPress={() => navigation.goBack()} title="Go back home" />
+        </View>
+    );
+}
+
+export default function App() {
+    return (
+        <NavigationContainer>
+            <Drawer.Navigator initialRouteName="Home">
+                <Drawer.Screen name="Home" component={HomeScreen} />
+                <Drawer.Screen name="Notifications" component={NotificationsScreen} />
+            </Drawer.Navigator>
+        </NavigationContainer>
+    );
+}
+import * as React from 'react';
+import { View, Text, Button } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem,
+} from '@react-navigation/drawer';
+
+function Feed({ navigation }) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Feed Screen</Text>
+      <Button title="Open drawer" onPress={() => navigation.openDrawer()} />
+      <Button title="Toggle drawer" onPress={() => navigation.toggleDrawer()} />
+    </View>
+  );
+}
+
+function Notifications() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Notifications Screen</Text>
+    </View>
+  );
+}
+
+function CustomDrawerContent(props) {
+  return (
+    <DrawerContentScrollView {...props}>
+      <DrawerItemList {...props} />
+      <DrawerItem
+        label="Close drawer"
+        onPress={() => props.navigation.closeDrawer()}
+      />
+      <DrawerItem
+        label="Toggle drawer"
+        onPress={() => props.navigation.toggleDrawer()}
+      />
+    </DrawerContentScrollView>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+function MyDrawer() {
+  return (
+    <Drawer.Navigator drawerContent={props => <CustomDrawerContent {...props} />}>
+      <Drawer.Screen name="Feed" component={Feed} />
+      <Drawer.Screen name="Notifications" component={Notifications} />
+    </Drawer.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <MyDrawer />
+    </NavigationContainer>
+  );
+}
+////////////////////////////////////////////////////////////////////////////////////////////
+
+Recap:
+
+1.Stack Navigator
+2.Tab Navigator
+3.Drawer Navigator
+/////////////////////////////////////////////////////////////////////////////////////////////
+                       Device features-Mobile App Components-React Native Advanced Components
+..............................................................................................
+
+In order to work with Device features:
+
+When you are creating an app that requires access to potentially senstive information on 
+user's device, such as their location, contacts,camera ...you need to ask for the user's
+permission first.
+
+How to get permission from the device?
+
+expo provides an module to work with permissions on both platforms.
+
+$ expo install expo-permissions
+
+Note : if you are working with particular device feature, device specific permission
+package must also be installed
+
+
+Permission type	Packages
+
+NOTIFICATIONS	expo-notifications
+
+USER_FACING_NOTIFICATIONS	expo-notifications
+
+LOCATION	expo-location
+
+CAMERA	expo-barcode-scanner expo-camera 
+        expo-face-detector expo-image-picker expo-media-library
+
+AUDIO_RECORDING	expo-av
+
+CONTACTS	expo-contacts
+
+MEDIA_LIBRARY MEDIA_LIBRARY_WRITE_ONLY	expo-image-picker
+                                        expo-media-library
+CALENDAR	expo-calendar
+
+REMINDERS	expo-calendar
+
+SYSTEM_BRIGHTNESS expo-brightness
+
+MOTION   expo-sensors	
+
+
+import * as Permission from 'expo-permission'
+
+Objects:
+
+1.PermissionResponse
+
+ status: 'granted'|'denied'|'undermined'
+ granted: boolean
+ expires: 'never' | number
+ 
+
+............................................................................................
+
+Note: how to work with async await inside useEffect hook?
+
+useEffect(() => {
+        fetch('https://reactnative.dev/movies.json')
+            .then((response) => response.json())
+            .then((json) => setData(json.movies))
+            .catch((error) => console.error(error))
+            .finally(() => setLoading(false));
+
+        async function init() {
+            try {
+                const response = await fetch('https://reactnative.dev/movies.json')
+                const json = await response.json();
+                const data = json.movies;
+                setData(data);
+            }
+            catch (e) {
+                console.log(error)
+            }
+            finally {
+                setLoading(false)
+            }
+        }
+        init();
+         //IIFE Syntax
+         (async function(){
+            try {
+                const response = await fetch('https://reactnative.dev/movies.json')
+                const json = await response.json();
+                const data = json.movies;
+                setData(data);
+            }
+            catch (e) {
+                console.log(error)
+            }
+            finally {
+                setLoading(false)
+            }
+         })();
+
+    }, []);
+
+
+
+Location: GPS
+expo-location allows reading geolocation information from the device.
+
+$expo install expo-location
+
+How to access Location Object?
+
+ import * as Location from 'expo-location'
+
+Permissions api always return promises, instead of using thenables we can use async...await..
+
+import React, { useState, useEffect } from 'react';
+import { Platform, Text, View, StyleSheet } from 'react-native';
+import * as Location from 'expo-location';
+
+export default function App() {
+    const [location, setLocation] = useState(null);
+    const [errorMsg, setErrorMsg] = useState(null);
+
+    useEffect(() => {
+        //write IIFE Function to wrap async...await logic
+        (async () => {
+            let { status } = await Location.requestPermissionsAsync();
+            if (status !== 'granted') {
+                setErrorMsg('Permission to access location was denied');
+                return;
+            }
+            let location = await Location.getCurrentPositionAsync({});
+            console.log(location)
+            setLocation(location);
+
+        })()
+
+    }, []);
+
+    let text = 'Waiting..';
+    if (errorMsg) {
+        text = errorMsg;
+    } else if (location) {
+        text = JSON.stringify(location);
+    }
+
+    return (<View style={styles.container}>
+        <Text style={{ fontSize: 10 }}>{text}</Text>
+    </View>
+    );
+
+
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
+
+How to integrate Map with Location?
+
+npm install react-native-maps
+import React from 'react';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import MapView from 'react-native-maps';
+
+
+export default function App() {
+    return (
+        <View style={styles.container}>
+            <MapView style={styles.map} initialRegion={{
+                latitude: 37.78825,
+                longitude: -122.4324,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }} />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    map: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+    },
+});
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+Map and Location:
+................
+
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import MapView from 'react-native-maps';
+import * as Location from 'expo-location';
+
+export default function App() {
+    const [location, setLocation] = useState(null);
+    const [errorMsg, setErrorMsg] = useState(null);
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestPermissionsAsync();
+            if (status !== 'granted') {
+                setErrorMsg('Permission to access location was denied');
+                return;
+            }
+
+            let location = await Location.getCurrentPositionAsync({});
+            setLocation(location);
+        })();
+    }, []);
+
+    let text = 'Waiting..';
+    if (errorMsg) {
+        text = errorMsg;
+    } else if (location) {
+        text = JSON.stringify(location);
+        console.log(location);
+    }
+    if (!location) {
+        return <View style={styles.container}>
+            <Text>No Location found!</Text>
+        </View>
+    }
+
+    return (<MapView style={{ flex: 1 }} initialRegion={{
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+    }} provider={MapView.PROVIDER_GOOGLE} />);
+
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    map: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+    },
+});
+/////////////////////////////////////////////////////////////////////////////////////////////
+How to access Contacts?
+
+expo-contacts proivdes access to the devices system contacts, allowing you to get contact
+information as well as adding , editing, removing contacts.
+
+expo install expo-contacts
+
+You need to access Permission: Permissions.CONTACTS
+
+
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, FlatList } from 'react-native';
+import * as Contacts from 'expo-contacts';
+
+
+export default function App() {
+    const [names, setNames] = useState([])
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await Contacts.requestPermissionsAsync();
+            if (status === 'granted') {
+                //will Return ContactResponse ; data; hasNextPage,hasPreviousNext
+                const contactResponse = await Contacts.getContactsAsync();
+                //ContactResponse has data property which will return arrayof contact
+                const contactList = contactResponse.data;
+                //console.log(contactList);
+                setNames(contactList)
+           
+            }
+        })();
+    }, []);
+
+    return (
+        <View style={styles.container}>
+            <FlatList keyExtractor={(item) => item.id} data={names}
+                renderItem={({ item }) => {
+                    return (<Text style={styles.item}>{item.firstName}</Text>)
+                }} />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    item: {
+        flex: 1,
+        marginHorizontal: 10,
+        marginTop: 25,
+        padding: 30,
+        backgroundColor: 'pink',
+        fontSize: 24
+    }
+});
+///////////////////////////////////////////////////////////////////////////////////////////////
+Media Api:
+.........
+
+Video and audio:
+...............
+
+expo install expo-av
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Button } from 'react-native';
+import { Video, AVPlaybackStatus } from 'expo-av';
+
+export default function App() {
+  const video = useRef(null);
+  const [status, setStatus] = useState({});
+  return (
+    <View style={styles.container}>
+      <Video
+        ref={video}
+        style={styles.video}
+        source={{
+          uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
+        }}
+        useNativeControls
+        resizeMode="contain"
+        isLooping
+        onPlaybackStatusUpdate={status => setStatus(() => status)}
+      />
+      <View style={styles.buttons}>
+        <Button
+          title={status.isPlaying ? 'Pause' : 'Play'}
+          onPress={() =>
+            status.isPlaying ? video.current.pauseAsync() : video.current.playAsync()
+          }
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#ecf0f1',
+  },
+  video: {
+    alignSelf: 'center',
+    width: 320,
+    height: 200,
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+Network
+expo-network provides useful information about the device's network such as its IP address, MAC address, and airplane mode status.
+
+expo install expo-network
+
+Configuration
+On Android, this module requires permissions to access the network and Wi-Fi state. The permissions ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE are added automatically.
+
+import * as Network from 'expo-network';
+
+Network.getNetworkStateAsync()
+Network.getIpAddressAsync()
+Network.getMacAddressAsync(interfaceName?)
+Network.isAirplaneModeEnabledAsync() (Android only)
+
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import * as Network from 'expo-network';
+
+export default function App() {
+  useEffect(() => {
+    (async () => {
+      const ip = await Network.getIpAddressAsync();
+      console.log(ip)
+    })();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text>Network Module</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+///////////////////////////////////////////////////////////////////////////////////////////
+
+Redux - Advanced topics
+1.api calls  -middlewares
+2.multi reducers
+
+React Native modules- How to write our own components in android, expose in javascript.
 
 
 
