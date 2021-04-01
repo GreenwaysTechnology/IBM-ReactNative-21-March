@@ -3149,6 +3149,7 @@ useEffect(() => {
 
 
 Location: GPS
+
 expo-location allows reading geolocation information from the device.
 
 $expo install expo-location
@@ -3463,11 +3464,645 @@ const styles = StyleSheet.create({
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-Redux - Advanced topics
-1.api calls  -middlewares
-2.multi reducers
+Storage: 
 
-React Native modules- How to write our own components in android, expose in javascript.
+ How to store data in mobile device.
+
+expo-sqlite gives your app access to a database that can be queried through a WebSQL-like API. The database is persisted across restarts of your app.
+
+expo install expo-sqlite
+
+How to use sqllite in our project?
+
+import * as SQLite from 'expo-sqlite';
+
+Database db = SQLite.openDatabase(name,version,desc,size)
+
+
+Database Object methods
+
+Database objects are returned by calls to SQLite.openDatabase(). Such an object represents a connection to a database on your device. They support one method:
+
+db.transaction(callback, error, success)-Execute a database transaction.
+
+A Transaction object is passed in as a parameter to the callback parameter for the db.transaction() method on a Database . It allows enqueuing SQL statements to perform in a database transaction. It supports one method:
+
+tx.executeSql(sqlStatement, arguments, success, error)
+
+ResultSet objects
+
+ResultSet objects are returned through second parameter of the success callback for the tx.executeSql() method on a Transaction
+
+
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Constants from 'expo-constants';
+import * as SQLite from 'expo-sqlite';
+
+
+const db = SQLite.openDatabase("db.db");
+
+function Items({ done: doneHeading, onPressItem }) {
+    const [items, setItems] = React.useState(null);
+
+    React.useEffect(() => {
+        db.transaction(tx => {
+            tx.executeSql(
+                `select * from items where done = ?;`,
+                [doneHeading ? 1 : 0],
+                (_, { rows: { _array } }) => setItems(_array)
+            );
+        });
+    }, []);
+
+    const heading = doneHeading ? "Completed" : "Todo";
+
+    if (items === null || items.length === 0) {
+        return null;
+    }
+
+    return (
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionHeading}>{heading}</Text>
+            {items.map(({ id, done, value }) => (
+                <TouchableOpacity
+                    key={id}
+                    onPress={() => onPressItem && onPressItem(id)}
+                    style={{
+                        backgroundColor: done ? "#1c9963" : "#fff",
+                        borderColor: "#000",
+                        borderWidth: 1,
+                        padding: 8
+                    }}
+                >
+                    <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
+                </TouchableOpacity>
+            ))}
+        </View>
+    );
+}
+
+export default function App() {
+    const [text, setText] = React.useState(null)
+    const [forceUpdate, forceUpdateId] = useForceUpdate()
+
+ 
+
+    React.useEffect(() => {
+        db.transaction(tx => {
+            tx.executeSql(
+                "create table if not exists items (id integer primary key not null, done int, value text);"
+            );
+        });
+    }, []);
+
+    const add = (text) => {
+        // is text empty?
+        if (text === null || text === "") {
+            return false;
+        }
+
+        db.transaction(
+            tx => {
+                tx.executeSql("insert into items (done, value) values (0, ?)", [text]);
+                tx.executeSql("select * from items", [], (_, { rows }) =>
+                    console.log(JSON.stringify(rows))
+                );
+            },
+            null,
+            forceUpdate
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.heading}>SQLite Example</Text>
+            <View style={styles.flexRow}>
+                <TextInput
+                    onChangeText={text => setText(text)}
+                    onSubmitEditing={() => {
+                        add(text);
+                        setText(null);
+                    }}
+                    placeholder="what do you need to do?"
+                    style={styles.input}
+                    value={text}
+                />
+            </View>
+            <ScrollView style={styles.listArea}>
+                <Items
+                    key={`forceupdate-todo-${forceUpdateId}`}
+                    done={false}
+                    onPressItem={id =>
+                        db.transaction(
+                            tx => {
+                                tx.executeSql(`update items set done = 1 where id = ?;`, [
+                                    id
+                                ]);
+                            },
+                            null,
+                            forceUpdate
+                        )
+                    }
+                />
+                <Items
+                    done
+                    key={`forceupdate-done-${forceUpdateId}`}
+                    onPressItem={id =>
+                        db.transaction(
+                            tx => {
+                                tx.executeSql(`delete from items where id = ?;`, [id]);
+                            },
+                            null,
+                            forceUpdate
+                        )
+                    }
+                />
+            </ScrollView>
+        </View>
+    );
+
+}
+
+function useForceUpdate() {
+    const [value, setValue] = useState(0);
+    return [() => setValue(value + 1), value];
+}
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: "#fff",
+        flex: 1,
+        paddingTop: Constants.statusBarHeight
+    },
+    heading: {
+        fontSize: 20,
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    flexRow: {
+        flexDirection: "row"
+    },
+    input: {
+        borderColor: "#4630eb",
+        borderRadius: 4,
+        borderWidth: 1,
+        flex: 1,
+        height: 48,
+        margin: 16,
+        padding: 8
+    },
+    listArea: {
+        backgroundColor: "#f0f0f0",
+        flex: 1,
+        paddingTop: 16
+    },
+    sectionContainer: {
+        marginBottom: 16,
+        marginHorizontal: 16
+    },
+    sectionHeading: {
+        fontSize: 18,
+        marginBottom: 8
+    }
+});
+/////////////////////////////////////////////////////////////////////////////////////////////
+Redux Advanced Features:
+........................
+
+How to write more reducers,More components.
+
+Points:
+
+1.We can have more reducers
+2.We can have only one store.
+
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import { createStore, combineReducers } from 'redux';
+import { connect, Provider } from 'react-redux';
+
+//action constants
+const INCREMENT = 'INCREMENT'
+const DECREMENT = 'DECREMENT';
+
+//reducer
+const incrementReducer = (state = 10, { type }) => {
+    switch (type) {
+        case INCREMENT:
+            return state + 1;
+        default:
+            return state;
+    }
+};
+const decrementReducer = (state = 100, { type }) => {
+    switch (type) {
+        case DECREMENT:
+            return state - 1;
+        default:
+            return state;
+    }
+};
+
+// const rootReducer = combineReducers({
+//     increment: incrementReducer,
+//     decrement: decrementReducer
+// });
+// const rootReducer = combineReducers({
+//     incrementReducer: incrementReducer,
+//     decrementReducer: decrementReducer
+// });
+const rootReducer = combineReducers({
+    incrementReducer,
+    decrementReducer
+});
+
+//create store
+const store = createStore(rootReducer);
+
+// store.subscribe(function () {
+//     console.log(store.getState());
+// });
+
+// store.dispatch({ type: INCREMENT })
+//Create Containers
+/////////////////////////////////////////////////////////////////////////////////
+//Mapper function: extract data from redux reducer(state) supply to React Component(props)
+//here we two reducer, then how to mapper function
+
+// function mapStateToPropIncr(state) {
+//     const value = state.incrementReducer
+//     return {
+//         incvalue: value
+//     }
+// }
+const mapStateToPropIncr = state => {
+    const incvalue = state.incrementReducer
+    return {
+        incvalue
+    }
+}
+
+const mapStateToPropDecr(state) => {
+    const decvalue = state.decrementReducer
+    return {
+        decvalue
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+function IncrementComponent(props) {
+    //event listener
+    function onIncrement(e) {
+        //TODO
+        props.dispatch({ type: INCREMENT })
+    }
+    return <View>
+        <Text>Increment : {props.incvalue}</Text>
+        <Button onPress={onIncrement} title="+" />
+    </View>
+}
+function DecrementComponent(props) {
+    //event listener
+    function onDecrement(e) {
+        //TODO
+        props.dispatch({ type: DECREMENT })
+    }
+    return <View>
+        <Text>Decrement : {props.decvalue}</Text>
+        <Button onPress={onDecrement} title="-" />
+    </View>
+}
+//create Containers
+const IncrementContainer = connect(mapStateToPropIncr)(IncrementComponent)
+const DecrementContainer = connect(mapStateToPropDecr)(DecrementComponent)
+
+export default function App() {
+    return (<Provider store={store}>
+        <View style={styles.container}>
+            <IncrementContainer />
+            <DecrementContainer />
+            <StatusBar style="auto" />
+        </View>
+    </Provider>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Refactored Code : refere  code repository
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+Types of Actions:
+
+1.sync action
+2.async action
+
+Redux work flow: Sync work flow
+
+View(Button)--pressButton---props.dispatch(action)---store---will call reducer--returns state--to store----subscribe method is called----new state is returned to view.
+
+
+Async work flow:
+
+1.where should i write api calls in redux.
+2.where should i write async programming- timers,websocket..?
+
+Reducer? - No
+ Reducer is just function, pure function, returns new state only. it wont have any
+async logic.
+
+Async actions: Redux Middleware and Side Effects#
+.................................................
+
+What is middleware?
+
+ middleware is a js function, which stops calling reducers immediatly until async operations
+are completed.
+
+lets say i want to call api, that should return data to ui.
+
+List Component-------------Expects data from api------
+
+View(Button)--pressButton---props.dispatch(action asking data from api)---store---|stop calling reducer until data is ready.
+
+
+middlewares:
+
+What exactly is middleware?
+
+ Generally speaking middleware is something that goes between parts A and B of an application to transform what A sends before passing it to B. So instead of having:
+ A -----> B
+ we end up having
+ A ---> middleware 1 ---> middleware 2 ---> middleware N --> ... ---> B
+
+how to write middleware ?
+
+middleware is just javascript curry function / higher order function.
+eg: connect is curry function.
+
+Higher order function:
+
+//how to write curry function.
+
+/* function makeCake(milk) {
+      return function (sugar) {
+            return function (bread) {
+                  return function (cream) {
+                        return function (color) {
+                              //coimbine all data and return
+                              return `${milk}${sugar}${bread}${cream}${color}`;
+                        }
+                  }
+            }
+      }
+} */
+const makeCake = milk => sugar => bread => cream => color => `${milk}${sugar}${bread}${cream}${color}`
+//hof
+const cake = makeCake('milk')('sugar')('bread')('cream')('color')
+console.log(cake);
+
+.....................*************...........................................
+
+Middleware syntax:
+
+ const anyMiddleware = function (store) {
+        return function(next) {
+            return function (action) {
+                // your middleware-specific code goes here
+               api call once done,with data, you can do store.dispatch()
+
+               
+            }
+        }
+    }
+
+store:
+  store object here is used to redispatch action once async operation is completed.
+
+next:
+  is just variable used to move from middleware to reducer or another middleare
+ middlewares can be chained
+   a---  b --- c --d --n --reducer
+     next  next 
+
+action:
+  which represents action object 
+
+
+  var anyMiddleware = function (store) {
+        return function(next) {
+            return function (action) {
+                // your middleware-specific code goes here
+
+		return next(action);
+    }
+     
+
+Point:
+
+1.middlewares can be used for various purposes like logging,async wrappers.
+
+//Welcome Middleware 
+const WelcomeMiddleware = function (store) {
+      return function (next) {
+            return function (action) {
+                  // your middleware-specific code goes here
+                  console.info(`Welcome to Redux`);
+                  return next(action);
+            }
+      }
+};
+//Logger Middleware
+/* const Logger = function (store) {
+      return function (next) {
+            return function (action) {
+                  // your middleware-specific code goes here
+                  console.log('dispatching', action)
+                  let result = next(action)
+                  console.log('next state', store.getState())
+                  return result
+            }
+      }
+}; */
+
+How to integrate middlewares to existing redux store?
+
+const middlewareConfig = applyMiddleware(WelcomeMiddleware, Logger);
+
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { incrementReducer, decrementReducer } from './reducers'
+
+//middleware code 
+const WelcomeMiddleware = function (store) {
+    return function (next) {
+        return function (action) {
+            // your middleware-specific code goes here
+            console.info(`Welcome to Redux`);
+            return next(action);
+        }
+    }
+};
+const Logger = function (store) {
+    return function (next) {
+        return function (action) {
+            // your middleware-specific code goes here
+            console.log('dispatching', action)
+            let result = next(action)
+            console.log('next state', store.getState())
+            return result
+        }
+    }
+};
+
+const middlewareConfig = applyMiddleware(WelcomeMiddleware, Logger);
+const rootReducer = combineReducers({
+    incrementReducer,
+    decrementReducer
+});
+//create store
+const store = createStore(rootReducer, middlewareConfig);
+
+export { store }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Types of Middlewares:
+
+1.custom middleware 
+   written by us - Logger,WelcomeMiddleware
+2.third party middlewares
+  provided by third parties
+
+In order to write async operations, there are third party middlewares available.
+
+User---store.dispatch(findAllTodos())------->middleware--->
+	
+ middleware waits for response----->dispatch({type:'FINDALLTODS'},response)-->
+
+	store--->will call reducer with response---reducer is called -->
+		
+		store is updated----->React subscribe the data.
+
+Async Implementations:
+
+1.timers
+2.Rest calls
+3.Web socket calls
+.....
+
+how to dispatch actions?
+
+1.by sending action object
+
+ store.dispatch({type:'INCREMENT',payload:1});
+
+2.by calling action creator ; function
+
+  function incrementCreator(payload){
+
+     //action object 
+     return {
+       type:INCREMENT,
+       payload
+     }
+  }
+
+
+Async Implementation: timers:
+..............................
+
+function incActionCreator(payload) {
+    setTimeout(function () {
+        return {
+            type: INCREMENT,
+            payload
+        }
+    }, 2000)
+}
+export { incActionCreator };
+
+when you call this redux will throw error.
+
+Error: Actions must be plain objects. Use custom middleware for async actions.
+
+
+How to solve this?
+
+We need to use async middlewares which is third party.
+
+Third party async middlewares
+
+1.redux-thunk
+2.redux-promise
+3.redux-saga
+4.redux-observable
+
+
+Setup thunk.
+
+>npm i redux-thunk
+
+//without middleware
+/*function incActionCreator(payload) {
+    setTimeout(function () {
+        return {
+            type: INCREMENT,
+            payload
+        }
+    }, 2000)
+} */
+function incActionCreator(payload) {
+    //thunk middleware syntax
+    return function (dispatch) {
+        setTimeout(function () {
+            dispatch({
+                type: INCREMENT,
+                payload
+            });
+        }, 3000)
+    }
+}
+
+AJAX CALLS: API CALLS
+
+function findAllTodos() {
+      return function (dispatch) {
+            const url = 'http://localhost:9999/todos'
+            fetch(url).then(res => res.json()).then(todos => {
+                  dispatch({
+                        type: FINDALL,
+                        todos
+                  })
+            });
+      }
+
+}
+
+Final Work flow:
+
+1 Async actions,thunk middleware,container components,React Native routers
+Please refer app.
+
+
+
+
+
+
+
+
+
+
+
 
 
 

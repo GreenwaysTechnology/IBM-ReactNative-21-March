@@ -1,0 +1,6 @@
+//action constants
+const INCREMENT = 'INCREMENT'
+const DECREMENT = 'DECREMENT';
+const FINDALL = 'FINDALL'
+
+export { INCREMENT, DECREMENT ,FINDALL };
